@@ -1,47 +1,41 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import fs from 'fs';
+import path from 'path';
 
-export default function PostPage() {
-  const params = useParams();
-  const [post, setPost] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch(`/posts/${params.slug}.json`)
-      .then(res => res.json())
-      .then(data => {
-        setPost(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Failed to load post:', err);
-        setLoading(false);
-      });
-  }, [params.slug]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-gray-100 flex items-center justify-center">
-        <div className="text-xl">Loading... 🦞</div>
-      </div>
-    );
+// Required for static export - tells Next.js which pages to pre-render
+export async function generateStaticParams() {
+  const postsDir = path.join(process.cwd(), 'public/posts');
+  
+  if (!fs.existsSync(postsDir)) {
+    return [];
   }
+  
+  const files = fs.readdirSync(postsDir)
+    .filter(f => f.endsWith('.json') && f !== 'index.json');
+  
+  return files.map(file => ({
+    slug: file.replace('.json', '')
+  }));
+}
+
+// Get post data server-side
+async function getPost(slug) {
+  const postPath = path.join(process.cwd(), 'public/posts', `${slug}.json`);
+  
+  if (!fs.existsSync(postPath)) {
+    return null;
+  }
+  
+  const postData = fs.readFileSync(postPath, 'utf-8');
+  return JSON.parse(postData);
+}
+
+export default async function PostPage({ params }) {
+  const post = await getPost(params.slug);
 
   if (!post) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">🦞</div>
-          <h1 className="text-2xl font-bold mb-2">Post not found</h1>
-          <Link href="/" className="text-cyan-400 hover:underline">
-            ← Back to home
-          </Link>
-        </div>
-      </div>
-    );
+    notFound();
   }
 
   return (

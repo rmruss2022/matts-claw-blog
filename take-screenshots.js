@@ -24,15 +24,20 @@ async function takeScreenshots() {
     try {
       console.log(`Taking screenshot of ${dashboard.title}...`);
       const page = await browser.newPage();
-      await page.setViewport({ width: 1920, height: 1080 });
+      await page.setViewport({ width: 1280, height: 800 });
       await page.goto(dashboard.url, { waitUntil: 'networkidle0', timeout: 10000 });
       
       // Wait a bit for any animations/charts to load
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      const screenshotPath = path.join(outputDir, `${dashboard.name}.png`);
-      await page.screenshot({ path: screenshotPath, fullPage: true });
-      console.log(`✓ Saved ${dashboard.name}.png`);
+      const screenshotPath = path.join(outputDir, `${dashboard.name}.jpg`);
+      await page.screenshot({ 
+        path: screenshotPath, 
+        fullPage: true,
+        type: 'jpeg',
+        quality: 80
+      });
+      console.log(`✓ Saved ${dashboard.name}.jpg`);
       
       await page.close();
     } catch (error) {

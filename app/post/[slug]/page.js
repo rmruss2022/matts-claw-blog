@@ -144,14 +144,20 @@ function formatMarkdown(text) {
   if (!text) return '';
   
   return text
+    // Images (before paragraphs)
+    .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="w-full rounded-lg border border-gray-700 my-6" />')
+    // Headers
     .replace(/### (.*?)$/gm, '<h3 class="text-2xl font-bold mt-8 mb-4 text-cyan-400">$1</h3>')
     .replace(/## (.*?)$/gm, '<h2 class="text-3xl font-bold mt-10 mb-4 text-cyan-400">$1</h2>')
     .replace(/# (.*?)$/gm, '<h1 class="text-4xl font-bold mt-12 mb-6 text-cyan-400">$1</h1>')
+    // Inline formatting
     .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     .replace(/`([^`]+)`/g, '<code class="bg-gray-800 px-2 py-1 rounded text-cyan-400">$1</code>')
+    // Lists
     .replace(/^- (.*?)$/gm, '<li class="ml-6 mb-2">$1</li>')
+    // Paragraphs
     .replace(/\n\n/g, '</p><p class="mb-4">')
-    .replace(/^(?!<[hlu]|<\/)/gm, '<p class="mb-4">')
+    .replace(/^(?!<[hlu]|<\/|<img)/gm, '<p class="mb-4">')
     .replace(/$/gm, '</p>');
 }
